@@ -7,13 +7,14 @@ projectile.action.action_delivery.target_effects = data.raw.projectile["atomic-r
 
 local nuke = table.deepcopy(data.raw.ammo["artillery-shell"])
 nuke.name = "nuke"
+nuke.icon = "__real-nukes__/graphics/nuke.png"
 nuke.ammo_type.action.action_delivery.projectile = "nuke-shell"
 
 local recipe = {
 	type = "recipe",
 	name = "nuke",
 	enabled = false,
-	energy_required = 60,
+	energy_required = 75,
 	ingredients = {
 		{"artillery-shell", 1},
 		{"atomic-bomb", 1}
