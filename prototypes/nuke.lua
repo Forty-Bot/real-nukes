@@ -9,9 +9,16 @@ local nuke = table.deepcopy(data.raw.ammo["artillery-shell"])
 nuke.name = "nuke"
 nuke.ammo_type.action.action_delivery.projectile = "nuke-shell"
 
-local recipe = table.deepcopy(data.raw.recipe["artillery-shell"])
-recipe.enabled = true
-recipe.name = "nuke"
-recipe.result = "nuke"
+local recipe = {
+	type = "recipe",
+	name = "nuke",
+	enabled = false,
+	energy_required = 60,
+	ingredients = {
+		{"artillery-shell", 1},
+		{"atomic-bomb", 1}
+	},
+	result = "nuke"
+}
 
 data:extend({projectile, nuke, recipe})
