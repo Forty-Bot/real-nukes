@@ -31,7 +31,7 @@ local pressures = effects.get_pressures(scale, burst_height)
 
 -- How spread out the individual explosions are
 -- This really helps reduce the amount of projectiles needed
-local sparse = 1
+local sparse = 2
 
 local protos = {}
 local waves = {}
@@ -61,7 +61,7 @@ for range, p in pairs(pressures) do
 				},	
 				{
 					type = "area",
-					radius = sparse,
+					radius = sparse - 1,
 					action_delivery = {
 						type = "instant",
 						target_effects = {
