@@ -1,5 +1,5 @@
 --[[
-Copyright (C) <year>  <name of author>
+Copyright (C) 2018 Sean Anderson
 
 This file is part of Realistic Nukes
 
