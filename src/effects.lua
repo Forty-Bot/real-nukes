@@ -20,6 +20,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 local effects = {}
 
 local const = require("const")
+local util = require("util")
+
+-- Formulae and data from <http://nuclearsecrecy.com/nukemap/> and Glasstone and Dolan 77
 
 -- Linear interpolation for y given x
 local function lerp(x0, y0, x1, y1, x)
@@ -38,8 +41,10 @@ function effects.get_pressures(scale, height)
 	-- Height converted to feet and adjusted for scale
 	local h = (height * const.meter_foot) / scale
 	local ret = {}
-	for p, isobar in pairs(const.overpressure_table) do
+	local lastp = 0
+	for p, isobar in util.spairs(const.overpressure_table, function(a, b) return a >= b end) do
 		local last = nil
+		-- Isobar order is from low height/high range -> high height/low range
 		for i, point in ipairs(isobar) do
 			-- Does the isobar cross h?
 			if last and ((last[1] >= h and point[1] <= h)
@@ -48,10 +53,39 @@ function effects.get_pressures(scale, height)
 				-- in which case just use the larger of the two
 				local range = lerp(last[1], last[2], point[1], point[2], h)
 					or math.max(last[2], point[2])
-				ret[range * const.foot_meter * scale] = p
+				range = range * const.foot_meter * scale
+				-- If we have a negative slope use the lower p value
+				-- +--------------------------------------------------------+
+				-- |                                                        |
+				-- |                                                        |
+				-- |                              This                      |
+				-- |                                |                       |
+				-- |                                v                       |
+				-- +-----------+                    +-----------+           |
+				-- |           +----+             +-+           ++          |
+				-- |                +-------------+              ++         |
+				-- |                                              ++        |
+				-- |                                               |        |
+				-- |                                               |        |
+				-- |                                               |        |
+				-- |                                               |        |
+				-- |                                               |        |
+				-- |                                               |        |
+				-- |                                               |        |
+				-- |                                               |        |
+				-- |                                               |        |
+				-- |                                               ++       |
+				-- |                                                ++      |
+				-- +--------------------------------------------------------+
+				if (last[1] - point[1]) / (last[2] - point[2]) < 0 then
+					ret[range] = lastp
+				else
+					ret[range] = p
+				end
 			end
 			last = point
 		end
+		lastp = p
 	end
 	return ret
 end
