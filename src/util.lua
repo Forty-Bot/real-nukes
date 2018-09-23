@@ -20,18 +20,15 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 local util = {}
 
 -- Iterate over a table sorted by f, or the default ordering if f is nil
--- f: function(t, a, b)
+-- f: function(a, b)
+-- close over the table if you want to reference it
 function util.spairs(t, f)
 	local keys = {}
 	for k in pairs(t) do
 		keys[#keys+1] = k
 	end
-
-	if f then
-		table.sort(keys, function(a, b) return f(t, a, b) end)
-	else
-		table.sort(keys)
-	end
+	
+	table.sort(keys, f)
 
 	local i = 0
 	return function()
