@@ -24,15 +24,6 @@ local util = require("util")
 
 -- Formulae and data from <http://nuclearsecrecy.com/nukemap/> and Glasstone and Dolan 77
 
--- Linear interpolation for y given x
-local function lerp(x0, y0, x1, y1, x)
-	if x0 == x1 then
-		return nil -- don't divide by 0
-	else
-		return (y0 * (x1 - x) + y1 * (x - x0)) / (x1 - x0)
-	end
-end
-
 -- Get overpressures and ranges of a blast
 --  scale: scaling factor relative to a 1 kT burst
 --  height: height of burst in meters

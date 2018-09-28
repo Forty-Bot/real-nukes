@@ -39,4 +39,32 @@ function util.spairs(t, f)
 	end
 end
 
+-- Reverse sort
+function util.reverse(a, b)
+	return a >= b
+end
+
+-- Linear interpolation for y given x
+function util.lerp(x0, y0, x1, y1, x)
+	if x0 == x1 then
+		return nil -- don't divide by 0
+	else
+		return (y0 * (x1 - x) + y1 * (x - x0)) / (x1 - x0)
+	end
+end
+
+-- Look up a value in a table and lerp it
+-- should be in the form table[x] = y
+-- Will not extrapolate, only interpolate
+function util.table_lerp(table, x)
+		local x0, y0 = nil
+		for x1, y1 in util.spairs(table) do
+			if x0 and ((x0 >= x and x1 <= x) or (x1 >= x and x >= x0)) then
+				return util.lerp(x0, y0, x1, y1, x)
+			end
+			x0 = x1
+			y0 = y1
+		end
+end
+
 return util
