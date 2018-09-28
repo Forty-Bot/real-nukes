@@ -36,6 +36,7 @@ const.psi_dmg = 20
 -- From nukeeffects.js, originally from Glasstone 77; converted to lua
 -- Peak overpressures of a 1kT burst
 -- in the form table[overpressure (psi)] = {{height (feet), range (feet)}, ...}
+-- Not in the form table[p][h] because the isobars are not functions
 const.overpressure_table = {
 	[10000] = {
 		{0  , 69},
@@ -769,6 +770,30 @@ const.overpressure_table = {
 		{5008, 599},
 		{5070, 0}
 	}
+}
+
+-- Arrival times at ground zero for a 1 kT blast
+-- In the form table[height] = time
+-- digitized from Glasstone p121
+const.arrival_table = {
+	[0] = 0,
+	[276] = 0.04,
+	[353] = 0.07,
+	[420] = 0.10,
+	[518] = 0.15,
+	[603] = 0.20,
+	[681] = 0.25,
+	[758] = 0.30,
+	[900] = 0.40,
+	[1043] = 0.5,
+	[1158] = 0.6,
+	[1402] = 0.8,
+	[1658] = 1.0,
+	[2255] = 1.5,
+	[2837] = 2.0,
+	[3397] = 2.5,
+	[3995] = 3.0,
+	[4543] = 3.5,
 }
 
 return const

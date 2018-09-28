@@ -42,7 +42,7 @@ function effects.get_pressures(scale, height)
 				or (point[1] >= h and h >= last[1])) then
 				-- Sometimes we have a horizontal isobar
 				-- in which case just use the larger of the two
-				local range = lerp(last[1], last[2], point[1], point[2], h)
+				local range = util.lerp(last[1], last[2], point[1], point[2], h)
 					or math.max(last[2], point[2])
 				range = range * const.foot_meter * scale
 				-- If we have a negative slope use the lower p value
@@ -52,10 +52,10 @@ function effects.get_pressures(scale, height)
 				-- |                              This                      |
 				-- |                                |                       |
 				-- |                                v                       |
-				-- +-----------+                    +-----------+           |
-				-- |           +----+             +-+           ++          |
-				-- |                +-------------+              ++         |
-				-- |                                              ++        |
+				-- |-----------                     ------------            |
+				-- |           \----               /            \           |
+				-- |                \-------------/              \          |
+				-- |                                              \         |
 				-- |                                               |        |
 				-- |                                               |        |
 				-- |                                               |        |
@@ -65,8 +65,8 @@ function effects.get_pressures(scale, height)
 				-- |                                               |        |
 				-- |                                               |        |
 				-- |                                               |        |
-				-- |                                               ++       |
-				-- |                                                ++      |
+				-- |                                              /         |
+				-- |                                             /          |
 				-- +--------------------------------------------------------+
 				if (last[1] - point[1]) / (last[2] - point[2]) < 0 then
 					ret[range] = lastp
@@ -85,6 +85,11 @@ end
 -- Glasstone 77 p97
 function effects.shock_speed(overpressure)
 	return const.sound_speed * math.sqrt(1 + (6 / 7) * (overpressure / const.atm))
+end
+
+-- Compute the arrival time at ground zero
+function effects.arrival_time(scale, height)
+	return util.table_lerp(const.arrival_table, height / scale) * scale
 end
 
 return effects
