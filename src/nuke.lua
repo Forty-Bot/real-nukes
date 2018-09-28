@@ -24,10 +24,6 @@ local cfg = require("cfg")
 
 local pressures = effects.get_pressures(cfg.scale, cfg.height)
 
--- How spread out the individual explosions are
--- This really helps reduce the amount of projectiles needed
-local sparse = 1
-
 local protos = {}
 
 
@@ -39,10 +35,24 @@ projectile.chart_picture.filename = "__real-nukes__/graphics/nuke-shoot-map-visu
 projectile.height_from_ground = cfg.height
 
 target_effects = {}
+
+-- Do an extrapolation for range 0
+-- Not the best mathematically, but w/e...
+local iter = util.spairs(pressures)
+local p0 = {iter()}
+local p1 = {iter()}
+if #p0 == 0 then
+	pressures[0] = 0
+	pressures[1] = 0
+else
+	-- We need the defaults in the case of exactly one pressure range
+	pressures[0] = util.lerp(p0[1], p0[2], p1[1] or p0[1] + 1, p1[2] or p0[2], 0)
+end
+
 last_damage = 0
-for range, p in util.spairs(pressures, function(a,b) return a >= b end) do
-	damage = p * const.psi_dmg
-	log(range .. " " .. damage .. " " .. last_damage)
+for range = math.floor(util.spairs(pressures, util.reverse)()), 0, -1 do
+	damage = util.table_lerp(pressures, range) * const.psi_dmg
+	log(range .. " " .. damage .. " " .. damage - last_damage)
 	table.insert(target_effects, {
 		type = "nested-result",
 		action = {
