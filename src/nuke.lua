@@ -103,7 +103,7 @@ table.insert(protos, projectile)
 
 local nuke = table.deepcopy(data.raw.ammo["artillery-shell"])
 nuke.name = "nuke"
-nuke.localised_name = {"item-description.nuke", cfg.yield}
+nuke.localised_description = {"item-description.nuke", cfg.yield}
 nuke.icon = "__real-nukes__/graphics/nuke.png"
 nuke.ammo_type.action.action_delivery.projectile = "nuke-shell"
 table.insert(protos, nuke)
@@ -111,7 +111,7 @@ table.insert(protos, nuke)
 table.insert(protos, {
 	type = "recipe",
 	name = "nuke",
-	localised_name = {"recipe-description.nuke", cfg.yield},
+	localised_description = {"recipe-description.nuke", cfg.yield},
 	enabled = false,
 	energy_required = 75,
 	ingredients = {
