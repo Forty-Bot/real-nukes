@@ -24,10 +24,24 @@ local cfg = require("cfg")
 
 -- Scaling factor when compared to a 1 kT blast
 local scale = cfg.yield^(1/3)
+
 local pressures = effects.get_pressures(scale, cfg.height)
 
-local protos = {}
-
+local protos = {
+	{
+		type = "projectile",
+		name = "nuke-sentinel",
+		flags = {"not-on-map"},
+		acceleration = 0,
+		animation = {
+			filename = "__core__/graphics/empty.png",
+			frame_count = 1,
+			width = 1,
+			height = 1,
+			priority = "high"
+		}
+	}
+}
 
 local projectile = table.deepcopy(data.raw["artillery-projectile"]["artillery-projectile"])
 projectile.name = "nuke-shell"
@@ -36,7 +50,12 @@ projectile.picture.filename = "__real-nukes__/graphics/nuke-shell.png"
 projectile.chart_picture.filename = "__real-nukes__/graphics/nuke-shoot-map-visualization.png"
 projectile.height_from_ground = cfg.height
 
-target_effects = {}
+target_effects = {
+	{
+		type = "create-entity",
+		entity_name = "nuke-sentinel"
+	}
+}
 
 -- Do an extrapolation for range 0
 -- Not the best mathematically, but w/e...
@@ -58,7 +77,7 @@ for range = math.floor(util.spairs(pressures, util.reverse)()), 1, -cfg.stride d
 	table.insert(protos, {
 		type = "projectile",
 		name = "nuke-proj-press-" .. range,
-		--flags = {"not-on-map"},
+		flags = {"not-on-map"},
 		acceleration = 0,
 		animation = {
 			filename = "__core__/graphics/empty.png",
@@ -70,16 +89,23 @@ for range = math.floor(util.spairs(pressures, util.reverse)()), 1, -cfg.stride d
 		final_action = {
 			type = "area",
 			radius = range,
-			action_delivery = {
-				type = "instant",
-				target_effects = {
-					{
-						type = "damage",
-						damage = {amount = damage - last_damage, type = "explosion"},
-					},
-					{
-						type = "show-explosion-on-chart",
-						scale = 1
+			source_effects = {
+				type = "nested-result",
+				action = {
+					type = "direct",
+					action_delivery = {
+						type = "instant",
+						target_effects = {
+							{
+								type = "damage",
+								-- Minimum cluster is 2
+								damage = {amount = (damage - last_damage)/2, type = "explosion"},
+							},
+							{
+								type = "show-explosion-on-chart",
+								scale = 0.1
+							}
+						}
 					}
 				}
 			}
@@ -88,7 +114,9 @@ for range = math.floor(util.spairs(pressures, util.reverse)()), 1, -cfg.stride d
 	table.insert(target_effects, {
 		type = "nested-result",
 		action = {
-			type = "direct",
+			type = "cluster",
+			cluster_count = 2,
+			distance = range,
 			action_delivery = {
 				type = "projectile",
 				projectile = "nuke-proj-press-" .. range,
