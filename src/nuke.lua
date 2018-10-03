@@ -22,7 +22,9 @@ local const = require("const")
 local util = require("util")
 local cfg = require("cfg")
 
-local pressures = effects.get_pressures(cfg.scale, cfg.height)
+-- Scaling factor when compared to a 1 kT blast
+local scale = cfg.yield^(1/3)
+local pressures = effects.get_pressures(scale, cfg.height)
 
 local protos = {}
 
@@ -50,12 +52,22 @@ else
 end
 
 last_damage = 0
-for range = math.floor(util.spairs(pressures, util.reverse)()), 0, -1 do
+for range = math.floor(util.spairs(pressures, util.reverse)()), 1, -cfg.stride do
 	damage = util.table_lerp(pressures, range) * const.psi_dmg
 	log(range .. " " .. damage .. " " .. damage - last_damage)
-	table.insert(target_effects, {
-		type = "nested-result",
-		action = {
+	table.insert(protos, {
+		type = "projectile",
+		name = "nuke-proj-press-" .. range,
+		--flags = {"not-on-map"},
+		acceleration = 0,
+		animation = {
+			filename = "__core__/graphics/empty.png",
+			frame_count = 1,
+			width = 1,
+			height = 1,
+			priority = "high"
+		},
+		final_action = {
 			type = "area",
 			radius = range,
 			action_delivery = {
@@ -70,6 +82,17 @@ for range = math.floor(util.spairs(pressures, util.reverse)()), 0, -1 do
 						scale = 1
 					}
 				}
+			}
+		}
+	})
+	table.insert(target_effects, {
+		type = "nested-result",
+		action = {
+			type = "direct",
+			action_delivery = {
+				type = "projectile",
+				projectile = "nuke-proj-press-" .. range,
+				starting_speed = const.sound_speed
 			}
 		}
 	})
