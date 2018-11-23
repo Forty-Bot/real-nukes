@@ -19,6 +19,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 local const = {}
 
+-- prototype naming constants
+const.sep = '~'
+const.press_prefix = 'nuke-proj-press' .. const.sep
+
 -- Conversions in the form from_to
 
 const.foot_meter = 0.3048

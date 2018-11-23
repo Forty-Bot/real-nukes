@@ -25,8 +25,6 @@ local cfg = require("cfg")
 -- Scaling factor when compared to a 1 kT blast
 local scale = cfg.yield^(1/3)
 
-local pressures = effects.get_pressures(scale, cfg.height)
-
 local protos = {
 	{
 		type = "projectile",
@@ -40,7 +38,7 @@ local protos = {
 			height = 1,
 			priority = "high"
 		}
-	}
+	},
 }
 
 local projectile = table.deepcopy(data.raw["artillery-projectile"]["artillery-projectile"])
@@ -53,12 +51,14 @@ projectile.height_from_ground = cfg.height
 target_effects = {
 	{
 		type = "create-entity",
-		entity_name = "nuke-sentinel"
+		entity_name = "nuke-sentinel",
+		trigger_created_entity = true
 	}
 }
 
 -- Do an extrapolation for range 0
 -- Not the best mathematically, but w/e...
+local pressures = effects.get_pressures(scale, cfg.height)
 local iter = util.spairs(pressures)
 local p0 = {iter()}
 local p1 = {iter()}
@@ -70,57 +70,66 @@ else
 	pressures[0] = util.lerp(p0[1], p0[2], p1[1] or p0[1] + 1, p1[2] or p0[2], 0)
 end
 
-last_damage = 0
-for range = math.floor(util.spairs(pressures, util.reverse)()), 1, -cfg.stride do
+local last_damage = 0
+local max_range = math.floor(util.spairs(pressures, util.reverse)())
+for range = max_range, 1, -cfg.stride do
 	damage = util.table_lerp(pressures, range) * const.psi_dmg
-	log(range .. " " .. damage .. " " .. damage - last_damage)
+	tick = math.floor(range * const.second_tick / const.sound_speed)
+	log(range .. " " .. damage .. " " .. damage - last_damage .. " " .. tick)
 	table.insert(protos, {
 		type = "projectile",
-		name = "nuke-proj-press-" .. range,
+		name = const.press_prefix .. tick,
 		flags = {"not-on-map"},
 		acceleration = 0,
 		animation = {
-			filename = "__core__/graphics/empty.png",
+			filename = "__core__/graphics/light-medium.png",
 			frame_count = 1,
-			width = 1,
-			height = 1,
+			width = 300,
+			height = 300,
 			priority = "high"
 		},
-		final_action = {
-			type = "area",
-			radius = range,
-			source_effects = {
-				type = "nested-result",
-				action = {
-					type = "direct",
-					action_delivery = {
-						type = "instant",
-						target_effects = {
-							{
-								type = "damage",
-								-- Minimum cluster is 2
-								damage = {amount = (damage - last_damage)/2, type = "explosion"},
-							},
-							{
-								type = "show-explosion-on-chart",
-								scale = 0.1
+		action = {
+			type = "direct",
+			action_delivery = {
+				type = "instant",
+				target_effects = {
+					type = "nested-result",
+					action = {
+						type = "area",
+						radius = range,
+						action_delivery = {
+							type = "instant",
+							target_effects = {
+								{
+									type = "damage",
+									damage = {amount = damage , type = "explosion"}
+								},
+								{
+									type = "show-explosion-on-chart",
+									scale = 1
+								}
 							}
 						}
 					}
 				}
 			}
-		}
+		},
 	})
 	table.insert(target_effects, {
 		type = "nested-result",
 		action = {
 			type = "cluster",
-			cluster_count = 2,
+			cluster_count = math.max((2/cfg.stride) * math.pi * range, 2),
 			distance = range,
 			action_delivery = {
 				type = "projectile",
-				projectile = "nuke-proj-press-" .. range,
-				starting_speed = const.sound_speed
+				-- Just need a do-nothing projectile
+				projectile = "nuke-sentinel",
+				starting_speed = const.sound_speed * const.tick_second,
+				target_effects = {
+					type = "create-entity",
+					entity_name = "big-artillery-explosion",
+				}
 			}
 		}
 	})
@@ -149,5 +158,4 @@ table.insert(protos, {
 	result = "nuke"
 })
 
-print("Hello world!")
 data:extend(protos)
