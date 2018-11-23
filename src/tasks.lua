@@ -38,7 +38,7 @@ script.on_event(defines.events.on_tick, function (e)
 	for _, task in ipairs(global.tasks[e.tick]) do
 		-- Ensure we still run all events even if earlier functions break
 		ok, err = pcall(function ()
-			funcs[task.fname](table.unwrap(task.args))
+			tasks.funcs[task.fname](table.unpack(task.args))
 		end)
 		if not ok then
 			log(err)
@@ -49,17 +49,21 @@ end)
 
 -- Run a function at some tick in the future
 function tasks.run_at(tick, fname, ...)
-	if not global.events[tick] then
-		global.events[tick] = {}
+	if not global.tasks[tick] then
+		global.tasks[tick] = {}
 	end
 	
 	-- Ensure the function exists
 	-- This is mostly for sanity/debugging
-	local _ = funcs[fname]
+	local _ = tasks.funcs[fname]
 	table.insert(global.tasks[tick], {
-		.fname = fname,
-		.args = ...
+		fname = fname,
+		args = {...}
 	})
+end
+
+function tasks.register(fname, func)
+	tasks.funcs[fname] = func
 end
 
 return tasks
